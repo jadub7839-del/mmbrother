@@ -1,4 +1,4 @@
-  :root{
+ :root{
     --black: #0a0a09;
     --black-deep: #050504;
     --white: #f3f1ea;
@@ -2695,6 +2695,15 @@
     display:none;
   }
   .shop-overlay.open, .pdp-overlay.open{ display:block; }
+
+  /* Groups the cart icon + close button together on the right side of a
+     page topbar (About/Shop/Product), so shoppers can reach the cart
+     without leaving the page they're on. */
+  .topbar-actions{
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
 
   .shop-overlay .co-topbar, .pdp-overlay .co-topbar{
     display:flex;
