@@ -1,4 +1,4 @@
-  const statementSection = document.querySelector('.statement');
+ const statementSection = document.querySelector('.statement');
   if (statementSection){
     const observer = new IntersectionObserver((entries) => {
       entries.forEach(entry => {
@@ -627,6 +627,14 @@
     renderCheckoutSummary();
 
     wireBackControl('checkoutClose', 'checkoutLogoBack', 'index.html');
+
+    /* Same bfcache concern as above: if this page is restored from cache
+       (e.g. Back button after leaving mid-checkout), re-pull the cart and
+       redraw the order summary so it can't show stale/emptied-out totals. */
+    window.addEventListener('pageshow', () => {
+      cartItems = loadJSON('mmbrother_cart', []);
+      renderCheckoutSummary();
+    });
   }
 
   /* ---- Scope: Featured Collection, Best Sellers & Latest Drop cards ----
@@ -1265,3 +1273,26 @@
   renderCartDrawer();
   renderWishlistDrawer();
   renderAcctState();
+
+  /* ---- Re-sync on bfcache restore ----
+     When the user navigates with the browser's Back/Forward buttons (or the
+     site's own Close/logo-back links, which use history.back()), the browser
+     often restores the page from its back-forward cache instead of reloading
+     it — so the script above never runs again, and the cart/wishlist/account
+     badges stay stuck showing whatever they were before the user left the
+     page. 'pageshow' fires every time the page becomes visible, including on
+     a bfcache restore (event.persisted is true then), so re-reading storage
+     and re-rendering here keeps everything in sync no matter how the page
+     was reached. */
+  window.addEventListener('pageshow', () => {
+    cartItems = loadJSON('mmbrother_cart', []);
+    wishlistItems = loadJSON('mmbrother_wishlist', []);
+    isLoggedIn = loadJSON('mmbrother_account', false);
+    renderCartDrawer();
+    renderWishlistDrawer();
+    renderAcctState();
+    scopedCards.forEach((card, idx) => {
+      const heart = card.querySelector('.wishlist-btn');
+      if (heart) heart.classList.toggle('active', wishlistItems.some(it => it.id === 'card-' + idx));
+    });
+  });
