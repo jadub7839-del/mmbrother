@@ -92,44 +92,29 @@
     heroVideo.addEventListener('contextmenu', e => e.preventDefault());
   }
 
-  /* ---- Shop The Look: image slider (Home page only — no #lookSlider
+  /* ---- Shop The Look: card carousel (Home page only — no #lookCarousel
      elsewhere, so this safely does nothing on other pages) ----
-     Arrows and dots both jump to a given slide; swipe does the same on
-     touch devices. No autoplay — the shopper drives it. */
-  const lookSlides = document.querySelectorAll('.look-slide');
-  if (lookSlides.length){
-    const lookDots = document.querySelectorAll('.look-dot');
+     Cards scroll horizontally with native touch/trackpad swipe (the
+     container is a plain overflow-x scroller with scroll-snap, so that
+     works with no JS at all); the arrows just nudge it by one card. */
+  const lookCarousel = document.getElementById('lookCarousel');
+  if (lookCarousel){
     const lookPrevBtn = document.getElementById('lookPrev');
     const lookNextBtn = document.getElementById('lookNext');
-    const lookFrame = document.getElementById('lookSlider');
-    let lookIndex = 0;
 
-    function showLookSlide(i){
-      lookIndex = (i + lookSlides.length) % lookSlides.length;
-      lookSlides.forEach((slide, idx) => slide.classList.toggle('active', idx === lookIndex));
-      lookDots.forEach((dot, idx) => dot.classList.toggle('active', idx === lookIndex));
+    function lookScrollStep(){
+      const card = lookCarousel.querySelector('.look-card');
+      if (!card) return 320;
+      const gap = parseFloat(window.getComputedStyle(lookCarousel).columnGap || '24');
+      return card.getBoundingClientRect().width + gap;
     }
 
-    if (lookPrevBtn) lookPrevBtn.addEventListener('click', () => showLookSlide(lookIndex - 1));
-    if (lookNextBtn) lookNextBtn.addEventListener('click', () => showLookSlide(lookIndex + 1));
-    lookDots.forEach(dot => {
-      dot.addEventListener('click', () => showLookSlide(parseInt(dot.getAttribute('data-index'), 10)));
+    if (lookPrevBtn) lookPrevBtn.addEventListener('click', () => {
+      lookCarousel.scrollBy({ left: -lookScrollStep(), behavior: 'smooth' });
     });
-
-    if (lookFrame){
-      let lookTouchStartX = null;
-      lookFrame.addEventListener('touchstart', (e) => {
-        lookTouchStartX = e.touches[0].clientX;
-      }, { passive: true });
-      lookFrame.addEventListener('touchend', (e) => {
-        if (lookTouchStartX === null) return;
-        const deltaX = e.changedTouches[0].clientX - lookTouchStartX;
-        if (Math.abs(deltaX) > 40){
-          showLookSlide(deltaX < 0 ? lookIndex + 1 : lookIndex - 1);
-        }
-        lookTouchStartX = null;
-      }, { passive: true });
-    }
+    if (lookNextBtn) lookNextBtn.addEventListener('click', () => {
+      lookCarousel.scrollBy({ left: lookScrollStep(), behavior: 'smooth' });
+    });
   }
 
   /* ---- Persistent storage (cart / wishlist / account) ----
