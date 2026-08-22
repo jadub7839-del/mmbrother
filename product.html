@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+ <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -79,9 +79,15 @@
 <div class="pdp-overlay open" id="pdpOverlay">
   <div class="co-topbar">
     <a href="#" class="co-logo" id="pdpLogoBack">MM <b>BROTHER</b></a>
-    <button type="button" class="co-close" id="pdpClose" aria-label="Close product page">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="4" x2="20" y2="20"></line><line x1="20" y1="4" x2="4" y2="20"></line></svg>
-    </button>
+    <div class="topbar-actions">
+      <button class="icon-btn" id="pdpCartIconBtn" aria-label="Cart" data-cart-icon-extra>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+        <span class="cart-count" id="pdpCartCountEl" data-cart-count-extra>0</span>
+      </button>
+      <button type="button" class="co-close" id="pdpClose" aria-label="Close product page">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="4" x2="20" y2="20"></line><line x1="20" y1="4" x2="4" y2="20"></line></svg>
+      </button>
+    </div>
   </div>
 
   <div class="pdp-wrap">
