@@ -92,29 +92,65 @@
     heroVideo.addEventListener('contextmenu', e => e.preventDefault());
   }
 
-  /* ---- Shop The Look: card carousel (Home page only — no #lookCarousel
-     elsewhere, so this safely does nothing on other pages) ----
-     Cards scroll horizontally with native touch/trackpad swipe (the
-     container is a plain overflow-x scroller with scroll-snap, so that
-     works with no JS at all); the arrows just nudge it by one card. */
-  const lookCarousel = document.getElementById('lookCarousel');
-  if (lookCarousel){
+  /* ---- Shop The Look: single-frame continuous slider (Home page only —
+     no .look-slide elsewhere, so this safely does nothing on other pages)
+     ----
+     Runs on its own on a timer, looping from the last picture back to the
+     first. Arrows, dots, and swipe all still work and just reset the timer
+     so it doesn't fight the shopper right after they navigate manually.
+     Written to work with however many .look-slide elements exist. */
+  const lookSlides = document.querySelectorAll('.look-slide');
+  if (lookSlides.length > 1){
+    const lookDots = document.querySelectorAll('.look-dot');
     const lookPrevBtn = document.getElementById('lookPrev');
     const lookNextBtn = document.getElementById('lookNext');
+    const lookFrame = document.getElementById('lookSlider');
+    let lookIndex = 0;
+    let lookAutoTimer = null;
 
-    function lookScrollStep(){
-      const card = lookCarousel.querySelector('.look-card');
-      if (!card) return 320;
-      const gap = parseFloat(window.getComputedStyle(lookCarousel).columnGap || '24');
-      return card.getBoundingClientRect().width + gap;
+    function showLookSlide(i){
+      lookIndex = (i + lookSlides.length) % lookSlides.length;
+      lookSlides.forEach((slide, idx) => slide.classList.toggle('active', idx === lookIndex));
+      lookDots.forEach((dot, idx) => dot.classList.toggle('active', idx === lookIndex));
+    }
+
+    function restartLookAutoplay(){
+      if (lookAutoTimer) clearInterval(lookAutoTimer);
+      lookAutoTimer = setInterval(() => showLookSlide(lookIndex + 1), 4500);
     }
 
     if (lookPrevBtn) lookPrevBtn.addEventListener('click', () => {
-      lookCarousel.scrollBy({ left: -lookScrollStep(), behavior: 'smooth' });
+      showLookSlide(lookIndex - 1);
+      restartLookAutoplay();
     });
     if (lookNextBtn) lookNextBtn.addEventListener('click', () => {
-      lookCarousel.scrollBy({ left: lookScrollStep(), behavior: 'smooth' });
+      showLookSlide(lookIndex + 1);
+      restartLookAutoplay();
     });
+    lookDots.forEach(dot => {
+      dot.addEventListener('click', () => {
+        showLookSlide(parseInt(dot.getAttribute('data-index'), 10));
+        restartLookAutoplay();
+      });
+    });
+
+    if (lookFrame){
+      let lookTouchStartX = null;
+      lookFrame.addEventListener('touchstart', (e) => {
+        lookTouchStartX = e.touches[0].clientX;
+      }, { passive: true });
+      lookFrame.addEventListener('touchend', (e) => {
+        if (lookTouchStartX === null) return;
+        const deltaX = e.changedTouches[0].clientX - lookTouchStartX;
+        if (Math.abs(deltaX) > 40){
+          showLookSlide(deltaX < 0 ? lookIndex + 1 : lookIndex - 1);
+          restartLookAutoplay();
+        }
+        lookTouchStartX = null;
+      }, { passive: true });
+    }
+
+    restartLookAutoplay();
   }
 
   /* ---- Persistent storage (cart / wishlist / account) ----
