@@ -1,4 +1,4 @@
- :root{
+:root{
     --black: #0a0a09;
     --black-deep: #050504;
     --white: #f3f1ea;
@@ -1627,73 +1627,114 @@
     padding:0 32px;
   }
 
-  .shop-look-frame{
+  /* ---------- Shop The Look: card carousel ----------
+     Each card mirrors the product-card treatment (image on top, name +
+     button below it, never overlaid on the photo) so it reads as part of
+     the same design language as the rest of the site. The row scrolls
+     horizontally with snap points; on desktop, if the cards comfortably
+     fit the container they simply sit side by side with no scrolling. */
+  .look-carousel-wrap{
     position:relative;
-    height:92vh;
-    min-height:560px;
-    max-height:960px;
-    overflow:hidden;
-    border:1px solid rgba(243,241,234,0.12);
   }
 
-  .shop-look-frame img,
-  .shop-look-frame video{
+  .look-carousel{
+    display:flex;
+    gap:24px;
+    overflow-x:auto;
+    scroll-snap-type:x mandatory;
+    scroll-behavior:smooth;
+    padding:4px 4px 8px;
+    -webkit-overflow-scrolling:touch;
+    scrollbar-width:none;
+  }
+  .look-carousel::-webkit-scrollbar{ display:none; }
+
+  .look-card{
+    flex:0 0 320px;
+    scroll-snap-align:start;
+    display:flex;
+    flex-direction:column;
+    background:var(--black-deep);
+    border:1px solid rgba(243,241,234,0.12);
+    transition:border-color .4s ease, transform .4s ease, box-shadow .4s ease;
+  }
+  .look-card:hover{
+    border-color:var(--gold-dim);
+    transform:translateY(-6px);
+    box-shadow:0 20px 44px rgba(0,0,0,0.5);
+  }
+
+  .look-card-img{
+    position:relative;
+    aspect-ratio:3/4;
+    overflow:hidden;
+    background:var(--black-deep);
+  }
+  .look-card-img img{
     position:absolute;
     inset:0;
     width:100%;
     height:100%;
     object-fit:cover;
     object-position:center;
-    filter:grayscale(30%) contrast(1.05) brightness(0.86);
+    filter:grayscale(20%) contrast(1.04) brightness(0.94);
     transform:scale(1.0);
-    transition:transform 1.6s cubic-bezier(.16,.9,.25,1), filter 1s ease;
+    transition:transform 1.2s cubic-bezier(.16,.9,.25,1), filter .6s ease;
   }
-
-  .shop-look-frame:hover img,
-  .shop-look-frame:hover video{
+  .look-card:hover .look-card-img img{
     transform:scale(1.045);
-    filter:grayscale(0%) contrast(1.05) brightness(0.92);
+    filter:grayscale(0%) contrast(1.04) brightness(1);
   }
 
-  .shop-look-frame::after{
-    content:'';
-    position:absolute;
-    inset:0;
-    z-index:1;
-    background:
-      linear-gradient(to top, rgba(5,5,4,0.94) 0%, rgba(5,5,4,0.3) 26%, rgba(5,5,4,0) 52%, rgba(5,5,4,0.22) 100%),
-      linear-gradient(to right, rgba(5,5,4,0.3) 0%, rgba(5,5,4,0) 18%, rgba(5,5,4,0) 82%, rgba(5,5,4,0.3) 100%);
-    pointer-events:none;
+  .look-card-info{
+    display:flex;
+    flex-direction:column;
+    align-items:flex-start;
+    gap:12px;
+    padding:22px 20px 24px;
+    border-top:1px solid rgba(243,241,234,0.08);
   }
 
-  .shop-look-content{
-    position:absolute;
-    left:0; right:0; bottom:0;
-    z-index:3;
-    text-align:center;
-    padding:0 24px 64px;
-  }
-
-  .shop-look-content h3{
+  .look-card-name{
     font-family:'Bebas Neue', sans-serif;
-    font-size:clamp(34px, 4.4vw, 58px);
-    letter-spacing:5px;
+    font-size:19px;
+    letter-spacing:1.5px;
     color:var(--white);
+    line-height:1.25;
   }
 
-  .shop-look-content p{
-    font-family:'Playfair Display', serif;
-    font-style:italic;
-    font-size:clamp(14px, 1.6vw, 17px);
-    color:rgba(243,241,234,0.75);
-    margin-top:14px;
-    letter-spacing:0.3px;
+  .look-card-info .btn{
+    width:100%;
+    text-align:center;
+    padding:12px 0;
+    font-size:11px;
   }
 
-  .shop-look-content .btn{
-    display:inline-block;
-    margin-top:32px;
+  .look-carousel-wrap .look-arrow{
+    position:absolute;
+    top:36%;
+    transform:translateY(-50%);
+    z-index:4;
+    width:46px;
+    height:46px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    background:rgba(5,5,4,0.6);
+    border:1px solid rgba(243,241,234,0.35);
+    color:var(--white);
+    cursor:pointer;
+    transition:background .3s ease, border-color .3s ease, transform .3s ease;
   }
+  .look-carousel-wrap .look-arrow:hover{
+    background:rgba(5,5,4,0.85);
+    border-color:var(--gold);
+    color:var(--gold-light);
+  }
+  .look-carousel-wrap .look-arrow svg{ width:18px; height:18px; }
+  .look-carousel-wrap .look-arrow-prev{ left:-8px; }
+  .look-carousel-wrap .look-arrow-next{ right:-8px; }
 
   /* ---------- Brand Statement ---------- */
   .statement{
@@ -2217,7 +2258,10 @@
     .shop-look{ padding:0 0 110px; }
     .shop-look-head{ margin-bottom:40px; }
     .shop-look-visual{ padding:0 24px; }
-    .shop-look-frame{ height:80vh; min-height:480px; }
+    .look-card{ flex-basis:min(62vw, 320px); }
+    .look-carousel-wrap .look-arrow{ width:40px; height:40px; }
+    .look-carousel-wrap .look-arrow-prev{ left:-4px; }
+    .look-carousel-wrap .look-arrow-next{ right:-4px; }
 
     .statement{ padding:140px 24px; }
     .statement-title{ letter-spacing:2px; }
@@ -2271,9 +2315,12 @@
 
     .shop-look{ padding:0 0 90px; }
     .shop-look-visual{ padding:0 16px; }
-    .shop-look-frame{ height:74vh; min-height:440px; }
-    .shop-look-content{ padding:0 18px 40px; }
-    .shop-look-content h3{ letter-spacing:3px; }
+    .look-card{ flex-basis:88vw; }
+    .look-card-info{ padding:18px 18px 20px; }
+    .look-carousel-wrap .look-arrow{ width:36px; height:36px; }
+    .look-carousel-wrap .look-arrow svg{ width:15px; height:15px; }
+    .look-carousel-wrap .look-arrow-prev{ left:2px; }
+    .look-carousel-wrap .look-arrow-next{ right:2px; }
 
     .statement{ padding:100px 20px; }
     .statement-title{ letter-spacing:1.5px; }
