@@ -144,6 +144,13 @@
   const cartDrawerCountEl = document.getElementById('cartDrawerCount');
   const checkoutBtn = document.getElementById('checkoutBtn');
 
+  /* Extra cart icon(s) shown right on the About/Shop/Product page topbars
+     (the main header's cart icon is hidden there — see the z-index layering
+     the page overlays use) so a shopper can open the cart, and get to
+     checkout, without backing all the way out to Home first. */
+  const extraCartIconBtns = document.querySelectorAll('[data-cart-icon-extra]');
+  const extraCartCountEls = document.querySelectorAll('[data-cart-count-extra]');
+
   function parsePrice(text){
     const n = parseFloat(String(text).replace(/[^0-9.]/g, ''));
     return isNaN(n) ? 0 : n;
@@ -160,6 +167,7 @@
 
     /* header badge + drawer count */
     cartCountEl.textContent = qty;
+    extraCartCountEls.forEach(el => { el.textContent = qty; });
     cartDrawerCountEl.textContent = qty > 0 ? `(${qty})` : '';
 
     /* subtotal */
@@ -227,6 +235,17 @@
     cartIconBtn.classList.remove('pulse');
     void cartIconBtn.offsetWidth;
     cartIconBtn.classList.add('pulse');
+
+    extraCartIconBtns.forEach(btn => {
+      btn.classList.remove('pulse');
+      void btn.offsetWidth;
+      btn.classList.add('pulse');
+    });
+    extraCartCountEls.forEach(el => {
+      el.classList.remove('pulse');
+      void el.offsetWidth;
+      el.classList.add('pulse');
+    });
   }
 
   function openCart(){
@@ -241,6 +260,12 @@
   cartIconBtn.addEventListener('click', (e) => {
     e.preventDefault();
     openCart();
+  });
+  extraCartIconBtns.forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      openCart();
+    });
   });
   cartClose.addEventListener('click', closeCart);
   cartOverlay.addEventListener('click', (e) => {
