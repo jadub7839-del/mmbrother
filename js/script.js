@@ -96,14 +96,12 @@
      no .look-slide elsewhere, so this safely does nothing on other pages)
      ----
      Runs on its own on a timer, looping from the last picture back to the
-     first. Arrows, dots, and swipe all still work and just reset the timer
-     so it doesn't fight the shopper right after they navigate manually.
+     first — fully automatic, no arrows or dots. Swipe still works on
+     touch devices and resets the timer so it doesn't fight the shopper
+     right after they swipe manually.
      Written to work with however many .look-slide elements exist. */
   const lookSlides = document.querySelectorAll('.look-slide');
   if (lookSlides.length > 1){
-    const lookDots = document.querySelectorAll('.look-dot');
-    const lookPrevBtn = document.getElementById('lookPrev');
-    const lookNextBtn = document.getElementById('lookNext');
     const lookFrame = document.getElementById('lookSlider');
     let lookIndex = 0;
     let lookAutoTimer = null;
@@ -111,28 +109,12 @@
     function showLookSlide(i){
       lookIndex = (i + lookSlides.length) % lookSlides.length;
       lookSlides.forEach((slide, idx) => slide.classList.toggle('active', idx === lookIndex));
-      lookDots.forEach((dot, idx) => dot.classList.toggle('active', idx === lookIndex));
     }
 
     function restartLookAutoplay(){
       if (lookAutoTimer) clearInterval(lookAutoTimer);
       lookAutoTimer = setInterval(() => showLookSlide(lookIndex + 1), 4500);
     }
-
-    if (lookPrevBtn) lookPrevBtn.addEventListener('click', () => {
-      showLookSlide(lookIndex - 1);
-      restartLookAutoplay();
-    });
-    if (lookNextBtn) lookNextBtn.addEventListener('click', () => {
-      showLookSlide(lookIndex + 1);
-      restartLookAutoplay();
-    });
-    lookDots.forEach(dot => {
-      dot.addEventListener('click', () => {
-        showLookSlide(parseInt(dot.getAttribute('data-index'), 10));
-        restartLookAutoplay();
-      });
-    });
 
     if (lookFrame){
       let lookTouchStartX = null;
