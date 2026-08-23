@@ -1619,6 +1619,17 @@
     margin:0 auto 56px;
     padding:0 24px;
   }
+  /* Make this section's own identity read clearly — scoped to shop-look
+     only so the shared .section-title/.section-eyebrow styling used by
+     other sections is untouched. */
+  .shop-look-head .section-eyebrow{
+    font-size:12px;
+    letter-spacing:6px;
+  }
+  .shop-look-head .section-title{
+    font-size:clamp(48px, 7vw, 92px);
+    letter-spacing:5px;
+  }
 
   .shop-look-visual{
     position:relative;
@@ -1706,55 +1717,22 @@
     margin-top:32px;
   }
 
-  .look-arrow{
-    position:absolute;
-    top:50%;
-    transform:translateY(-50%);
-    z-index:4;
-    width:46px;
-    height:46px;
-    border-radius:50%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    background:rgba(5,5,4,0.45);
-    border:1px solid rgba(243,241,234,0.35);
-    color:var(--white);
-    cursor:pointer;
-    transition:background .3s ease, border-color .3s ease, transform .3s ease;
-  }
-  .look-arrow:hover{
-    background:rgba(5,5,4,0.7);
-    border-color:var(--gold);
-    color:var(--gold-light);
-  }
-  .look-arrow svg{ width:18px; height:18px; }
-  .look-arrow-prev{ left:20px; }
-  .look-arrow-next{ right:20px; }
-
-  .look-dots{
-    position:absolute;
-    left:0; right:0;
-    bottom:22px;
-    z-index:4;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    gap:10px;
-  }
-  .look-dot{
-    width:7px;
-    height:7px;
-    border-radius:50%;
-    background:rgba(243,241,234,0.4);
-    border:none;
-    padding:0;
-    cursor:pointer;
-    transition:background .3s ease, transform .3s ease;
-  }
-  .look-dot.active{
-    background:var(--gold);
-    transform:scale(1.35);
+  /* Desktop/laptop only — the source photos are portrait, so the tall,
+     wide-open frame at this size was cropping the top/bottom of the
+     model/product. Containing the image (instead of cropping to cover)
+     guarantees the whole picture stays visible, and narrowing the frame
+     to a portrait-friendly width keeps it filling the frame nicely
+     instead of floating in a wide letterboxed strip. Mobile/tablet
+     (<=980px) are untouched — their sizing stays exactly as before. */
+  @media (min-width: 981px){
+    .shop-look-frame{
+      width:min(100%, 640px);
+      margin:0 auto;
+    }
+    .look-slide img{
+      object-fit:contain;
+      background:var(--black);
+    }
   }
 
   /* ---------- Brand Statement ---------- */
@@ -2280,9 +2258,6 @@
     .shop-look-head{ margin-bottom:40px; }
     .shop-look-visual{ padding:0 24px; }
     .shop-look-frame{ height:80vh; min-height:480px; }
-    .look-arrow{ width:40px; height:40px; }
-    .look-arrow-prev{ left:14px; }
-    .look-arrow-next{ right:14px; }
 
     .statement{ padding:140px 24px; }
     .statement-title{ letter-spacing:2px; }
@@ -2339,11 +2314,6 @@
     .shop-look-frame{ height:74vh; min-height:440px; }
     .shop-look-content{ padding:0 18px 40px; }
     .shop-look-content h3{ letter-spacing:3px; }
-    .look-arrow{ width:36px; height:36px; }
-    .look-arrow svg{ width:15px; height:15px; }
-    .look-arrow-prev{ left:10px; }
-    .look-arrow-next{ right:10px; }
-    .look-dots{ bottom:16px; }
 
     .statement{ padding:100px 20px; }
     .statement-title{ letter-spacing:1.5px; }
