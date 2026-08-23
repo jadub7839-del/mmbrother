@@ -743,19 +743,23 @@
     };
   }
 
-  /* Size options per product category. T-Shirts get a compulsory Size
-     selector; Pants get a compulsory Waist selector; everything else keeps
-     the existing optional S/M/L/XL sizing. */
+  /* Size options per product category. Every product on the site needs a
+     Size (or Waist, for pants-family items) selected before it can be added
+     to the cart — this covers T-Shirts, Hoodies, Pants, Co-Ord Sets, and
+     everything else. Only the sizing values themselves differ by category. */
   const SIZE_OPTIONS = {
     tshirt: ['S', 'M', 'L', 'XL'],
     pants: ['30', '32', '34', '36', '38'],
+    hoodie: ['S', 'M', 'L', 'XL'],
+    'co-ord': ['S', 'M', 'L', 'XL'],
+    jacket: ['S', 'M', 'L', 'XL'],
     default: ['S', 'M', 'L', 'XL']
   };
   function sizeOptionsFor(category){
     return SIZE_OPTIONS[category] || SIZE_OPTIONS.default;
   }
   function sizeIsRequiredFor(category){
-    return category === 'tshirt' || category === 'pants';
+    return true;
   }
   function sizeLabelFor(category){
     return category === 'pants' ? 'WAIST' : 'SIZE';
