@@ -2360,10 +2360,19 @@
     .statement-title{ letter-spacing:1.5px; }
     .statement-body{ font-size:14px; line-height:1.8; }
 
-    .signup{ padding:80px 20px; }
-    .signup-form{ flex-direction:column; align-items:stretch; gap:12px; }
-    .signup-input{ max-width:none; height:52px; }
-    .signup-btn{ width:100%; }
+    .signup{ padding:80px 20px 90px; }
+    .signup-sub{ padding:0 6px; }
+    .signup-form{ flex-direction:column; align-items:stretch; gap:16px; margin-top:36px; }
+    .signup-input{
+      max-width:none;
+      height:56px;
+      padding:0 20px;
+      font-size:13px;
+      letter-spacing:1px;
+    }
+    .signup-btn{ width:100%; padding:16px 24px; }
+    .signup-error{ padding:0 6px; }
+    .signup-success{ margin-top:36px; padding:0 8px; }
 
     .final-cta{ padding:90px 20px; }
     .final-cta-frame{ inset:10px; }
@@ -3534,6 +3543,14 @@ header *{box-sizing:border-box;}
   .collections-head,
   .bestsellers-head,
   .latest-drop-head{margin-bottom:34px;}
+}
+
+/* Join MM Members (signup) — mobile-only breathing room. Placed last so it
+   wins over the earlier .signup padding-top/padding-bottom rules above on
+   phone widths, without touching how it looks on tablet (481-700px) or
+   desktop. */
+@media (max-width: 480px){
+  .signup{ padding-top:84px; padding-bottom:96px; }
 }
 
 /* Keep motion elegant and accessible */
