@@ -625,6 +625,22 @@
     checkoutForm.addEventListener('submit', (e) => {
       e.preventDefault();
       if (cartItems.length === 0) return;
+
+      /* Safety net: Order Confirmation must never go through for a cart item
+         that needed a Size/Waist but doesn't have one recorded — every normal
+         path (Product Detail, Quick View) already enforces this before the
+         item reaches the cart, so this only catches an already-invalid cart. */
+      const coSizeError = document.getElementById('coSizeError');
+      const missingSizeItem = cartItems.find(it => sizeIsRequiredFor(it.category) && !it.size);
+      if (missingSizeItem){
+        if (coSizeError){
+          coSizeError.textContent = missingSizeItem.name + ' needs a ' + sizeLabelFor(missingSizeItem.category).toLowerCase() + ' selected — please remove and re-add it with a size before placing the order.';
+          coSizeError.classList.add('show');
+        }
+        return;
+      }
+      if (coSizeError){ coSizeError.classList.remove('show'); coSizeError.textContent = ''; }
+
       if (!validateCheckoutForm()){
         const firstInvalid = checkoutForm.querySelector('.co-field.invalid input, .co-field.invalid textarea');
         if (firstInvalid) firstInvalid.focus();
@@ -803,10 +819,27 @@
       btn.addEventListener('click', () => {
         const id = btn.getAttribute('data-id');
         const item = wishlistItems.find(it => it.id === id);
-        if (item){
-          addToCart({ id: item.id, name: item.name, price: item.price, image: item.image });
-          flashAdded(btn);
+        if (!item) return;
+
+        /* Wishlist items don't carry a size — for a T-Shirt/Pants item this
+           button can't add straight to cart (that would skip the required
+           Size/Waist selection). Send the shopper to that product's page
+           instead, where the same required-selection flow as everywhere
+           else applies, rather than adding an item with no size. */
+        if (sizeIsRequiredFor(item.category)){
+          const idx = parseInt(id.replace('card-', ''), 10);
+          if (btn.classList.contains('added')) return;
+          const original = btn.textContent;
+          btn.classList.add('added');
+          btn.textContent = 'SELECT ' + sizeLabelFor(item.category);
+          setTimeout(() => {
+            if (!isNaN(idx)) window.location.href = 'product.html?id=' + idx;
+          }, 700);
+          return;
         }
+
+        addToCart({ id: item.id, name: item.name, price: item.price, image: item.image });
+        flashAdded(btn);
       });
     });
   }
@@ -856,7 +889,8 @@
             id,
             name: name ? name.textContent.trim() : 'MM Brother Item',
             price: parsePrice(price ? price.textContent : '0'),
-            image: img ? img.src : ''
+            image: img ? img.src : '',
+            category: card.getAttribute('data-category') || ''
           });
 
           wishlistCountEl.classList.remove('pulse');
@@ -915,6 +949,8 @@
     const pdpAddCartBtn = document.getElementById('pdpAddCartBtn');
     const pdpRelatedGrid = document.getElementById('pdpRelatedGrid');
 
+    const pdpSizeError = document.getElementById('pdpSizeError');
+
     function renderProductDetailPage(idx){
       const card = scopedCards[idx];
       if (!card) return;
@@ -933,7 +969,8 @@
       pdpSizesWrap.innerHTML = sizeOptionsFor(data.category)
         .map(size => `<button type="button" class="pdp-size">${size}</button>`)
         .join('');
-      pdpAddCartBtn.disabled = pdpRequiresSize;
+      pdpSizesWrap.classList.remove('needs-selection');
+      if (pdpSizeError){ pdpSizeError.classList.remove('show'); pdpSizeError.textContent = ''; }
 
       pdpRelatedGrid.innerHTML = '';
       let added = 0;
@@ -952,16 +989,32 @@
         added++;
       });
 
+      /* Add to Cart stays clickable either way — a disabled button gives no
+         feedback about why nothing happened (especially on mobile, with no
+         hover state). Clicking without a required Size/Waist selected shows
+         a clear inline message and highlights the size row instead; the add
+         only goes through once a selection is made. */
       pdpAddCartBtn.onclick = () => {
         const selectedBtn = pdpSizesWrap.querySelector('.pdp-size.selected');
-        if (pdpRequiresSize && !selectedBtn) return;
+        if (pdpRequiresSize && !selectedBtn){
+          pdpSizesWrap.classList.remove('needs-selection');
+          void pdpSizesWrap.offsetWidth;
+          pdpSizesWrap.classList.add('needs-selection');
+          if (pdpSizeError){
+            pdpSizeError.textContent = 'Please select a ' + sizeLabelFor(data.category).toLowerCase() + ' before adding to cart.';
+            pdpSizeError.classList.add('show');
+          }
+          return;
+        }
+        if (pdpSizeError){ pdpSizeError.classList.remove('show'); pdpSizeError.textContent = ''; }
         const selectedSize = selectedBtn ? selectedBtn.textContent.trim() : 'One Size';
         addToCart({
           id: 'pdp-' + data.name + '-' + selectedSize,
           name: data.name,
           price: data.priceValue,
           image: data.image,
-          size: selectedSize
+          size: selectedSize,
+          category: data.category
         });
         flashAdded(pdpAddCartBtn);
       };
@@ -972,7 +1025,8 @@
       if (!btn) return;
       pdpSizesWrap.querySelectorAll('.pdp-size').forEach(b => b.classList.remove('selected'));
       btn.classList.add('selected');
-      pdpAddCartBtn.disabled = false;
+      pdpSizesWrap.classList.remove('needs-selection');
+      if (pdpSizeError){ pdpSizeError.classList.remove('show'); pdpSizeError.textContent = ''; }
     });
 
     wireBackControl('pdpClose', 'pdpLogoBack', 'shop.html');
@@ -992,15 +1046,18 @@
   const qvPrice = document.getElementById('qvPrice');
   const qvSizesLabel = document.getElementById('qvSizesLabel');
   const qvSizesWrap = document.getElementById('qvSizes');
+  const qvSizeError = document.getElementById('qvSizeError');
   const qvAddBtn = document.getElementById('qvAddBtn');
   const qvClose = document.getElementById('qvClose');
   let qvRequiresSize = false;
+  let qvCategory = '';
 
   function openQuickView(card){
     const img = card.querySelector('.product-image img');
     const name = card.querySelector('.product-name');
     const price = card.querySelector('.product-price');
     const category = card.getAttribute('data-category') || '';
+    qvCategory = category;
     qvImage.src = img ? img.src : '';
     qvImage.alt = img ? img.alt : '';
     qvName.textContent = name ? name.textContent : '';
@@ -1013,10 +1070,11 @@
     qvSizesWrap.innerHTML = sizeOptionsFor(category)
       .map(size => `<button class="qv-size">${size}</button>`)
       .join('');
+    qvSizesWrap.classList.remove('needs-selection');
+    if (qvSizeError){ qvSizeError.classList.remove('show'); qvSizeError.textContent = ''; }
 
     qvAddBtn.textContent = 'ADD TO CART';
     qvAddBtn.classList.remove('added');
-    qvAddBtn.disabled = qvRequiresSize;
     qvOverlay.classList.add('open');
     document.body.style.overflow = 'hidden';
   }
@@ -1041,12 +1099,27 @@
     if (!sizeBtn) return;
     qvSizesWrap.querySelectorAll('.qv-size').forEach(s => s.classList.remove('selected'));
     sizeBtn.classList.add('selected');
-    qvAddBtn.disabled = false;
+    qvSizesWrap.classList.remove('needs-selection');
+    if (qvSizeError){ qvSizeError.classList.remove('show'); qvSizeError.textContent = ''; }
   });
 
+  /* Same approach as the Product Detail page: the button stays clickable
+     (no silent disabled state) and clicking without a required selection
+     shows a clear inline message plus highlights the size row, on both
+     desktop and mobile — the add only proceeds once a size is chosen. */
   qvAddBtn.addEventListener('click', () => {
     const selectedSizeBtn = qvSizesWrap.querySelector('.qv-size.selected');
-    if (qvRequiresSize && !selectedSizeBtn) return;
+    if (qvRequiresSize && !selectedSizeBtn){
+      qvSizesWrap.classList.remove('needs-selection');
+      void qvSizesWrap.offsetWidth;
+      qvSizesWrap.classList.add('needs-selection');
+      if (qvSizeError){
+        qvSizeError.textContent = 'Please select a ' + sizeLabelFor(qvCategory).toLowerCase() + ' before adding to cart.';
+        qvSizeError.classList.add('show');
+      }
+      return;
+    }
+    if (qvSizeError){ qvSizeError.classList.remove('show'); qvSizeError.textContent = ''; }
     const selectedSize = selectedSizeBtn ? selectedSizeBtn.textContent.trim() : null;
     const nameText = qvName.textContent.trim();
     addToCart({
@@ -1054,7 +1127,8 @@
       name: nameText,
       price: parsePrice(qvPrice.textContent),
       image: qvImage.src,
-      size: selectedSize || 'One Size'
+      size: selectedSize || 'One Size',
+      category: qvCategory
     });
     flashAdded(qvAddBtn);
     setTimeout(closeQuickView, 900);
